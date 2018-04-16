@@ -141,7 +141,7 @@ def getUsers(bearerToken):
     #The API returns 50 users at a time, but also the number of total users in the tenant. The number of loops, therefore
     #is the number of users in the system/50, rounded up. That is, for 151 users, you will need to call the API 4 times 
     #151/50=3.02, this needs to be rounded up to get the last 1 user (1-50, 51-100, 100-150, 151)
-    numLoops = math.ceil(numTotalUsers/50)
+    numLoops = int(math.ceil(numTotalUsers/50))
     
     for loop in range(0,numLoops):
         if (loop == 0):

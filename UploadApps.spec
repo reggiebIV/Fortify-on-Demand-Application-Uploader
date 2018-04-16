@@ -3,7 +3,7 @@
 block_cipher = None
 
 
-a = Analysis(['I:\\Documents\\HP\\Scripts\\Python\\UploadApps\\UploadApps.py'],
+a = Analysis(['UploadApps.py'],
              pathex=['I:\\Documents\\HP\\Scripts\\Python\\UploadApps'],
              binaries=[],
              datas=[],
