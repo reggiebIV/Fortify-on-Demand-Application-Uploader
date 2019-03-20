@@ -20,9 +20,10 @@ if not os.path.exists('log/FodImport.log'):
         pass
     
 #This instantiates a logger that will be used to track any applications and dynamic forms that don't correctly populate in FoD
-logger = logging.getLogger('FoDImport')
-hdlr = logging.FileHandler('log/FodImport.log')
-formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+logger      = logging.getLogger('FoDImport')
+hdlr        = logging.FileHandler('log/FodImport.log')
+formatter   = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+
 logger.setLevel(logging.INFO)
 logger.addHandler(hdlr)
 
@@ -39,28 +40,28 @@ def AddApplications(uploadFile, apiKey, apiSecret):
     #The AddApplications method is used for onboarding applications in to the Fortify on Demand environment, from an Excel spreadsheet
     #This method takes 3 arguments, the file with the data for upload, and the key and secret pair furnished for the FoD API
 
-    workbook = xlrd.open_workbook(uploadFile)
-    appData = workbook.sheet_by_name('Sheet1')
-    numberRows = appData.nrows
-    applicationUrl = 'https://api.ams.fortify.com/api/v3/applications'
-    bearerToken = GetToken(apiKey, apiSecret)   
-    allUsers = getUsers(bearerToken)
+    workbook        = xlrd.open_workbook(uploadFile)
+    appData         = workbook.sheet_by_name('Sheet1')
+    numberRows      = appData.nrows
+    applicationUrl  = 'https://api.ams.fortify.com/api/v3/applications'
+    bearerToken     = GetToken(apiKey, apiSecret)   
+    allUsers        = getUsers(bearerToken)
     
     if bearerToken != None:
         for i in range(1,numberRows):
             #Looping through the rows of the spreadsheet provided to get required application data
-            appName = appData.cell(i, 0).value
-            businessCrit = appData.cell(i, 1).value
-            appType = appData.cell(i, 2).value
-            appType = appType.replace(" ", "_")
-            appType = appType.replace("/", "_")
-            releaseName = appData.cell(i, 3).value
-            sdlcStatus = appData.cell(i, 4).value
-            sdlcStatus = sdlcStatus.replace('/Test','')
-            ownerName = appData.cell(i, 5).value
-            ownerName = ownerName.lower()
-            ownerId = str(allUsers[ownerName])
-            dynamicData = []
+            appName         = appData.cell(i, 0).value
+            businessCrit    = appData.cell(i, 1).value
+            appType         = appData.cell(i, 2).value
+            appType         = appType.replace(" ", "_")
+            appType         = appType.replace("/", "_")
+            releaseName     = appData.cell(i, 3).value
+            sdlcStatus      = appData.cell(i, 4).value
+            sdlcStatus      = sdlcStatus.replace('/Test','')
+            ownerName       = appData.cell(i, 5).value
+            ownerName       = ownerName.lower()
+            ownerId         = str(allUsers[ownerName])
+            dynamicData     = []
             customAttribute = False
 
             if (appData.cell(0, 19) and appData.cell(1,19).value != ""):
@@ -83,9 +84,10 @@ def AddApplications(uploadFile, apiKey, apiSecret):
                 'authorization': "Bearer " + bearerToken,
                 'content-type': "application/json"
             }
+            
             try:
                 response = requests.request("Post", applicationUrl, data=payload, headers=headers)
-                percentComplete = str(round(((i+1)/(numberRows-1))*100))
+                percentComplete = str(round(((i)/(numberRows-1))*100))
                 print('Added ', percentComplete, '% of applications')
                 print(response.text)
                 ts = time.time()
@@ -185,19 +187,19 @@ def getReleaseId(appId, bearerToken):
 
 def populateDynamicForm(releaseId, bearerToken, dynamicData):
     #This method takes the dynamic form data from the user spreadsheet, parses it, and uses it to populated the dynamic form for our newly created release
-    releaseIdString = str(releaseId)
-    dynamicFormUrl = "https://api.ams.fortify.com/api/v3/releases/" + releaseIdString + "/dynamic-scans/scan-setup"
-    siteUrl = dynamicData[0]
-    assessmentType = dynamicData[1]
-    timeZone = dynamicData[2]
-    environmentFace = dynamicData[3]
-    repeatFreq = dynamicData[5]
+    releaseIdString                         = str(releaseId)
+    dynamicFormUrl                          = "https://api.ams.fortify.com/api/v3/releases/" + releaseIdString + "/dynamic-scans/scan-setup"
+    siteUrl                                 = dynamicData[0]
+    assessmentType                          = dynamicData[1]
+    timeZone                                = dynamicData[2]
+    environmentFace                         = dynamicData[3]
+    repeatFreq                              = dynamicData[5]
     #The format of the site availability is specific, and the following method uses that to parse it in to the format that is required by the API
-    siteAvail = generateSiteAvailability(dynamicData[6])
-    subscription = dynamicData[12]
-    exclusions = "" if dynamicData[4] == "" else setExclusions(dynamicData[4])
-    restrictToDirectoryAndSubdirectories = dynamicData[14]
-    authMode = dynamicData[7]
+    siteAvail                               = generateSiteAvailability(dynamicData[6])
+    subscription                            = dynamicData[12]
+    exclusions                              = "" if dynamicData[4] == "" else setExclusions(dynamicData[4])
+    restrictToDirectoryAndSubdirectories    = dynamicData[14]
+    authMode                                = dynamicData[7]
     
     
     
@@ -235,13 +237,12 @@ def populateDynamicForm(releaseId, bearerToken, dynamicData):
         dynamicFormPayload = "{\r\n  \"geoLocationId\": 1,\r\n  \"multiFactorAuth\": \"False\",\r\n  \"dynamicScanEnvironmentFacingType\": \"" + environmentFace + "\",\r\n  \"exclusionsList\": " + exclusions + ",\r\n  \"dynamicScanAuthenticationType\": \"NoAuthentication\",\r\n  \"dynamicSiteURL\": \"" + siteUrl + "\",\r\n  \"timeZone\": \"" + timeZone + "\",\r\n  \"blockout\": " + siteAvail + ",\r\n  \"repeatScheduleType\": \"" + repeatFreq + "\",\r\n  \"assessmentTypeId\":" + assessmentTypeId + ",\r\n  \"restrictToDirectoryAndSubdirectories\":\"" + restrictToDirectoryAndSubdirectories + "\",\r\n  \"entitlementFrequencyType\": \"" + entitlementType + "\"\r\n}"
     else:
         primaryUserName = dynamicData[8]
-        primaryPass = dynamicData[9]
-        secondUserName = dynamicData[10]
-        secondPass = dynamicData[11]
+        primaryPass     = dynamicData[9]
+        secondUserName  = dynamicData[10]
+        secondPass      = dynamicData[11]
         
         dynamicFormPayload = "{\r\n  \"geoLocationId\": 1,\r\n  \"multiFactorAuth\": \"False\",\r\n  \"dynamicScanEnvironmentFacingType\": \"" + environmentFace + "\",\r\n  \"exclusionsList\": " + exclusions + ",\r\n  \"dynamicScanAuthenticationType\": \"" + authMode + "\",\r\n  \"primaryUserName\": \"" + primaryUserName + "\",\r\n  \"primaryUserPassword\": \"" + primaryPass + "\",\r\n  \"secondaryUserName\": \"" + secondUserName + "\",\r\n  \"secondaryUserPassword\": \"" + secondPass + "\",\r\n  \"dynamicSiteURL\": \"" + siteUrl + "\",\r\n  \"timeZone\": \"" + timeZone + "\",\r\n  \"blockout\": " + siteAvail + ",\r\n  \"repeatScheduleType\": \"" + repeatFreq + "\",\r\n  \"assessmentTypeId\":" + assessmentTypeId + ",\r\n  \"restrictToDirectoryAndSubdirectories\":\"" + restrictToDirectoryAndSubdirectories + "\",\r\n  \"entitlementFrequencyType\": \"" + entitlementType + "\"\r\n}"
-    
-    
+        
     
     try:
         response = requests.request("Put", dynamicFormUrl, data=dynamicFormPayload, headers=headers)
@@ -606,6 +607,7 @@ def setCustomAttributeValue(attributeName, givenAttributeValue, bearerToken):
     thisAttribute['value'] = attributeId
     attributeArray.append(thisAttribute)
     return attributeArray
+    
     
     
 AddApplications(sys.argv[1], sys.argv[2], sys.argv[3])

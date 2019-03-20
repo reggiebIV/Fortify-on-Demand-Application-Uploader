@@ -3,8 +3,8 @@
 block_cipher = None
 
 
-a = Analysis(['UploadApps.py'],
-             pathex=['I:\\Documents\\HP\\Scripts\\Python\\UploadApps'],
+a = Analysis(['uploadapps.py'],
+             pathex=['I:\\Projects\\Fortify-on-Demand-Application-Uploader'],
              binaries=[],
              datas=[],
              hiddenimports=[],
@@ -19,7 +19,7 @@ pyz = PYZ(a.pure, a.zipped_data,
 exe = EXE(pyz,
           a.scripts,
           exclude_binaries=True,
-          name='UploadApps',
+          name='uploadapps',
           debug=False,
           strip=False,
           upx=True,
@@ -30,4 +30,4 @@ coll = COLLECT(exe,
                a.datas,
                strip=False,
                upx=True,
-               name='UploadApps')
+               name='uploadapps')
